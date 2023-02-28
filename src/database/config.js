@@ -1,9 +1,9 @@
 const { Sequelize } = require('sequelize')
 const path = require('path')
 
-const sequelize = new Sequelize('todoDb', '', '', {
+const sequelize = new Sequelize('tailorshopDb', '', '', {
 	dialect: 'sqlite',
-	storage: path.join(__dirname, 'todoDb.sqlite'),
+	storage: path.join(__dirname, 'tailorshopDb.sqlite'),
 })
 
 module.exports = { sequelize }
