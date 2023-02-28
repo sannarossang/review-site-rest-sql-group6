@@ -26,7 +26,7 @@ const run = async () => {
     await sequelize.authenticate();
 
     app.listen(port, () => {
-      console.log(`🚀 Server is running on http://localhost${port}`);
+      console.log(`🚀 Server is running on http://localhost:${port}`);
     });
   } catch (error) {
     console.error(error);

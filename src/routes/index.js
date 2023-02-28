@@ -2,13 +2,13 @@ const express = require('express')
 const router = express.Router()
 
 const authRoutes = require('./authRoutes')
-const userRoutes = require('./userRoutes')
-const todoListRoutes = require('./listRoutes')
-const todoRoutes = require('./todoRoutes')
+const userRoutes = require('../routes/userRoutes')
+const reviewRoutes = require('../routes/reviewRoutes')
+const tailorshopRoutes = require('../routes/tailorshopRoutes')
 
 router.use('/auth', authRoutes)
 router.use('/users', userRoutes)
-router.use('/lists', todoListRoutes)
-router.use('/todos', todoRoutes)
+router.use('/reviews', reviewRoutes)
+router.use('/tailorshops', tailorshopRoutes)
 
 module.exports = router

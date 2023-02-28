@@ -9,6 +9,6 @@ exports.notFoundMiddleware = (req, res, next) => {
   } else {
     return res
       .status(404)
-      .sendFile(path.join(__dirname, "..", "views", "notFound.html"));
+      .sendFile(path.join(__dirname, "..", "views", "notfound.html"));
   }
 };
