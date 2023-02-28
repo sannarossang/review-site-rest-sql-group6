@@ -2,10 +2,10 @@ const { sequelize } = require("./config");
 
 const seedTailorshopsDb = async () => {
   try {
-    await sequelize.query(`DROP TABLE IF EXISTS users`);
-    await sequelize.query(`DROP TABLE IF EXISTS cities;`);
-    await sequelize.query(`DROP TABLE IF EXISTS tailorshops;`);
     await sequelize.query(`DROP TABLE IF EXISTS reviews;`);
+    await sequelize.query(`DROP TABLE IF EXISTS tailorshops;`);
+    await sequelize.query(`DROP TABLE IF EXISTS cities;`);
+    await sequelize.query(`DROP TABLE IF EXISTS users;`);
 
     await sequelize.query(`
         CREATE TABLE IF NOT EXISTS users (
@@ -91,7 +91,7 @@ const seedTailorshopsDb = async () => {
     ("Review 5 ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea ", null, (SELECT id FROM users WHERE user_name = 'firstuser'), (SELECT id FROM tailorshops WHERE shop_name = 'fifth tailor')),
     ("Review 6 Nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit", null, (SELECT id FROM users WHERE user_name = 'seconduser'), (SELECT id FROM tailorshops WHERE shop_name = 'sixth tailor')),
     ("Review 7 Numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem", null, (SELECT id FROM users WHERE user_name = 'adminuser'), (SELECT id FROM tailorshops WHERE shop_name = 'seventh tailor')),
-    ("Review 8 Voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo.", null, (SELECT id FROM users WHERE user_name = 'firstowneruser'), (SELECT id FROM tailorshops WHERE shop_name = 'eight tailor')),
+    ("Review 8 Voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo.", null, (SELECT id FROM users WHERE user_name = 'firstowneruser'), (SELECT id FROM tailorshops WHERE shop_name = 'eighth tailor')),
     ("Review 9 Numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.", null, (SELECT id FROM users WHERE user_name = 'firstuser'), (SELECT id FROM tailorshops WHERE shop_name = 'ninth tailor')),
     ("Review 10 Voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi.", null, (SELECT id FROM users WHERE user_name = 'seconduser'), (SELECT id FROM tailorshops WHERE shop_name = 'tenth tailor'))
     `;
