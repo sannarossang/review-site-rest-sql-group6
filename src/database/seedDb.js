@@ -19,20 +19,17 @@ const seedTailorshopsDb = async ()=> {
             user_role TEXT NOT NULL
         );`)
 
-        // is_admin BOOLEAN CHECK (is_admin IN (0, 1))
+        // is_admin BOOLEAN CHECK (is_admin IN (0,1))
 
         await sequelize.query(`
         CREATE TABLE IF NOT EXISTS tailorshops (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             shop_name TEXT NOT NULL,
             shop_description TEXT NOT NULL,
-            shop_address TEXT NOT NULL
-            fk_users_id INTEGER NOT NULL,
-            FOREIGN KEY(fk_users_id) REFERENCES users(id), 
+            shop_address TEXT NOT NULL,
+            fk_user_id INTEGER NOT NULL,
+            FOREIGN KEY(fk_user_id) REFERENCES users(id)
         );`)
-
-        /*         fk_review_id INTEGER NOT NULL,
-            FOREIGN KEY(fk_review_id) REFERENCES review(id)*/
 
         await sequelize.query(`
         CREATE TABLE IF NOT EXISTS reviews (
@@ -46,8 +43,6 @@ const seedTailorshopsDb = async ()=> {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             city_name TEXT NOT NULL
         );`)
-        
-
 
     } catch (error) {
         console.error(error)
