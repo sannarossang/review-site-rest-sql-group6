@@ -8,7 +8,7 @@ const tailorshopRoutes = require('../routes/tailorshopRoutes')
 
 router.use('/auth', authRoutes)
 router.use('/users', userRoutes)
-router.use('/reviews', reviewRoutes)
+router.use('/tailorshops', reviewRoutes)
 router.use('/tailorshops', tailorshopRoutes)
 
 module.exports = router
