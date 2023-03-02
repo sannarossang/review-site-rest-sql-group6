@@ -15,13 +15,13 @@ const {
 // } = require("../middleware/authenticationMiddleware");
 
 router.get(
-  "/tailorshops",
+  "/",
   /*isAuthenticated, authorizeRoles(userRoles.ADMIN)*/ getAllTailorshops
 );
-router.get("/tailorshops/:tailorshopId", /*isAuthenticated,*/ getTailorshopById);
-router.get("/tailorshops/:tailorshopId", /*isAuthenticated,*/ getTailorshopByCity);
-router.post("/tailorshops", createNewTailorshop);
-router.put("/tailorshops/:tailorshopId", updateTailorshopById);
-router.delete("/tailorshops/:tailorshopId", /*isAuthenticated,*/ deleteTailorshopById);
+router.get("/:tailorshopId", /*isAuthenticated,*/ getTailorshopById);
+router.get("/city/:city", /*isAuthenticated,*/ getTailorshopByCity);
+router.post("/", createNewTailorshop);
+router.put("/:tailorshopId", updateTailorshopById);
+router.delete("/:tailorshopId", /*isAuthenticated,*/ deleteTailorshopById);
 
 module.exports = router;
