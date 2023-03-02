@@ -17,8 +17,8 @@ router.get(
   /*isAuthenticated, authorizeRoles(userRoles.ADMIN)*/ getAllReviews
 );
 router.get("/reviews/:reviewId", /*isAuthenticated,*/ getReviewById);
-router.post("/reviews", createNewReview);
-router.put("/tailorshop/reviews/:reviewId", updateReviewById);
-router.delete("/tailorshop/reviews/:reviewId", /*isAuthenticated,*/ deleteReviewById);
+router.post("/:tailorshopId/reviews", createNewReview);
+router.put("/:tailorshopId/reviews/:reviewId", updateReviewById);
+router.delete("/reviews/:reviewId", /*isAuthenticated,*/ deleteReviewById);
 
 module.exports = router;
