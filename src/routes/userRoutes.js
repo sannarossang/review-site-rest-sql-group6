@@ -1,25 +1,21 @@
 const express = require("express");
 const { userRoles } = require("../constants/users");
 const router = express.Router();
+const {isAuthenticated, authorizeRoles} = require('../middleware/authenticationMiddleware')
 const {
   getAllUsers,
   getUserById,
-  createNewUser,
+  /*createNewUser,*/
   updateUserById,
   deleteUserById,
 } = require("../controllers/usersController");
-// const {
-//   isAuthenticated,
-//   authorizeRoles,
-// } = require("../middleware/authenticationMiddleware");
 
-router.get(
-  "/users",
-  /*isAuthenticated, authorizeRoles(userRoles.ADMIN)*/ getAllUsers
-);
-router.get("/users/:userId", /*isAuthenticated,*/ getUserById);
-router.post("/users", createNewUser); //petter har inte dessa i sitt repo
-router.put("/users/:userId", updateUserById); //petter har inte dessa i sitt repo
-router.delete("/users/:userId", /*isAuthenticated,*/ deleteUserById);
+
+
+router.get( "/", /*isAuthenticated, authorizeRoles(userRoles.ADMIN),*/ getAllUsers)
+router.get("/:userId", /*isAuthenticated,*/ getUserById);
+//router.post("/", createNewUser); //petter har inte dessa i sitt repo
+router.put("/:userId", isAuthenticated, updateUserById); //petter har inte dessa i sitt repo
+router.delete("/:userId", /*isAuthenticated,*/ deleteUserById);
 
 module.exports = router;

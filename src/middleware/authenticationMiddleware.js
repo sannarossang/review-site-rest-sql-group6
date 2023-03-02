@@ -17,10 +17,10 @@ exports.isAuthenticated = async (req, res, next) => {
   try {
     const payload = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = {
-      userId: payload.userId,
-      role: payload.role,
-      username: payload.username,
+    req.users = {
+      id: payload.id,
+      user_role: payload.user_role,
+      user_name: payload.user_name,
     };
 
     next();
@@ -31,7 +31,7 @@ exports.isAuthenticated = async (req, res, next) => {
 
 exports.authorizeRoles = (...roles) => {
   return (req, res, next) => {
-    if (!req.user?.role || !roles.includes(req, user.role)) {
+    if (!req.users?.user_role || !roles.includes(req, users.user_role)) {
       throw new UnauthorizedError("Unauthorized Access!");
     }
     next();

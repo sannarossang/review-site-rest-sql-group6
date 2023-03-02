@@ -5,7 +5,7 @@ exports.notFoundMiddleware = (req, res, next) => {
   const isApiPath = req.path && req.path.startsWith("/api/");
 
   if (isApiPath) {
-    throw new NotFoundError("This endpoint does not exists!");
+    throw new NotFoundError("This endpoint does not exist!");
   } else {
     return res
       .status(404)
