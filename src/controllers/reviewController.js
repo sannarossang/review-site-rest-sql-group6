@@ -4,15 +4,15 @@ const { sequelize } = require("../database/config");
 const { UnauthorizedError, NotFoundError } = require("../utils/errors");
 
 exports.getAllReviews = async (req, res) => {
-  const [results] = await sequelize.query(`SELECT * FROM reviews`); //ev plocka bort fk-värden och speca?
+  const [results] = await sequelize.query(`SELECT * FROM reviews`);
   return res.json(results);
 };
 
 exports.getReviewById = async (req, res) => {
   const reviewId = req.params.reviewId;
 
-  const [results, metadata] = await sequelize.query(
-    `SELECT id, review_text, review_score, fk_user_id, fk_tailorshop_id FROM reviews WHERE id = $reviewId;
+  const [results] = await sequelize.query(
+    `SELECT id, review_text, review_score FROM reviews WHERE id = $reviewId;
 		`,
     {
       bind: { reviewId: reviewId },
@@ -20,25 +20,24 @@ exports.getReviewById = async (req, res) => {
     }
   );
 
-  if (!results) throw new NotFoundError("Den recensionen finns inte.");
+  if (!results) throw new NotFoundError("That review does not exists.");
 
   return res.json(results);
 };
 
 exports.createNewReview = async (req, res) => {
-  const { review_text, review_score, user_name, tailorshop } = req.body; //ska inte den ha tailorshop? hur blir det med req.params
-
-  //user_name bör bytas ut när auth är på plats, annars kan man skriva in vad som
+  const { review_text, review_score } = req.body;
 
   const [userResults] = await sequelize.query(
     `SELECT * FROM users u
     WHERE UPPER(u.user_name) = UPPER($user);`,
     {
-      bind: { user: user_name },
+      bind: { user: req.users.user_name },
     }
   );
+
   if (userResults.length === 0) {
-    //returnera badrequest att användaren inte finns
+    throw new NotFoundError("That user does not exists.");
   }
 
   const [tailorshopResult] = await sequelize.query(
@@ -48,6 +47,10 @@ exports.createNewReview = async (req, res) => {
       bind: { tailorshop: req.params.tailorshopId },
     }
   );
+
+  if (tailorshopResult.length === 0) {
+    throw new NotFoundError("That tailorshop does not exists.");
+  }
 
   const [newReviewId] = await sequelize.query(
     `INSERT INTO reviews (fk_user_id, fk_tailorshop_id, review_text, review_score) VALUES ($user, $id, $review, $score);`,
@@ -74,21 +77,17 @@ exports.updateReviewById = async (req, res) => {
   const reviewId = req.params.reviewId;
   const tailorshopId = req.params.tailorshopId;
 
-  const { review_text, review_score, user_name } = req.body;
-
-  console.log(tailorshopId);
-
-  //user_name bör bytas ut när auth är på plats, annars kan man skriva in vad som
+  const { review_text, review_score } = req.body;
 
   const [userResults] = await sequelize.query(
     `SELECT * FROM users u
     WHERE UPPER(u.user_name) = UPPER($user);`,
     {
-      bind: { user: user_name },
+      bind: { user: req.users.user_name },
     }
   );
   if (userResults.length === 0) {
-    //returnera badrequest att användaren inte finns
+    throw new NotFoundError("That user does not exists.");
   }
 
   const [tailorshopResult] = await sequelize.query(
@@ -100,6 +99,28 @@ exports.updateReviewById = async (req, res) => {
       },
     }
   );
+
+  const [reviewResult] = await sequelize.query(
+    `SELECT * FROM reviews r
+    WHERE r.id = $reviewId;`,
+    {
+      bind: {
+        reviewId,
+      },
+    }
+  );
+
+  if (tailorshopResult.length === 0) {
+    throw new NotFoundError("That tailorshop does not exists.");
+  }
+
+  if (reviewResult[0].fk_tailorshop_id !== tailorshopResult[0].id) {
+    throw new NotFoundError("That review does not belong to this tailorshop");
+  }
+
+  if (userResults[0].id !== tailorshopResult[0].fk_user_id) {
+    throw new UnauthorizedError("Your user does not own this tailorshop");
+  }
 
   const [updatedReview] = await sequelize.query(
     `UPDATE reviews
@@ -116,7 +137,7 @@ exports.updateReviewById = async (req, res) => {
       },
     }
   );
-  return res.json(updatedReview);
+  return res.json(updatedReview[0]);
 };
 
 exports.deleteReviewById = async (req, res) => {
