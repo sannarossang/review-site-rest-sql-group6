@@ -1,8 +1,13 @@
 const { body } = require('express-validator')
 
 exports.registerSchema = [
-	body('email').isEmail().withMessage('You must provide a valid email address'),
-	body('password')
+	body('user_name')
+		.not()
+		.isEmpty()
+		.withMessage('You must provide a valid user name')
+		.isLength({ min: 2 }),
+	body('user_email').isEmail().withMessage('You must provide a valid email address'),
+	body('user_password')
 		.not()
 		.isEmpty()
 		.isLength({ min: 6 })
@@ -10,6 +15,6 @@ exports.registerSchema = [
 ]
 
 exports.loginSchema = [
-	body('email').isEmail().withMessage('You must provide a valid email address'),
-	body('password').not().isEmpty().withMessage('You must provide a password'),
+	body('user_email').isEmail().withMessage('You must provide a valid email address'),
+	body('user_password').not().isEmpty().withMessage('You must provide a password'),
 ]

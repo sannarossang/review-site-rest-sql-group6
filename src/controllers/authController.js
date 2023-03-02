@@ -6,87 +6,74 @@ const { QueryTypes } = require("sequelize");
 const { userRoles } = require("../constants/users");
 
 exports.register = async (req, res) => {
-  // Place desired username, email and password into local variables
-  const { password, email } = req.body;
+  const { user_name, user_password, user_email } = req.body;
 
-  // Encrypt the desired password
   const salt = await bcrypt.genSalt(10);
-  const hashedpassword = await bcrypt.hash(password, salt);
+  const hashedpassword = await bcrypt.hash(user_password, salt);
 
-  // Check if there are users in the database
   const [results, metadata] = await sequelize.query(
     "SELECT id FROM users LIMIT 1"
   );
 
-  // Add user to database (make admin if first user)
   if (!results || results.length < 1) {
-    // prettier-ignore
     await sequelize.query(
-			'INSERT INTO users (email, password, is_admin) VALUES ($email, $password, TRUE)', 
+			'INSERT INTO users (user_name, user_email, user_password, is_admin) VALUES ($user_name, $user_email, $user_password, TRUE)', 
 			{
 				bind: {
-					password: hashedpassword,
-					email: email
+          user_name: user_name,
+					user_password: hashedpassword,
+					user_email: user_email
 				}
 			}
 		)
   } else {
-    // prettier-ignore
-    await sequelize.query(
-			'INSERT INTO users (email, password) VALUES ($email, $password)', 
-			{
-				bind: {
-					password: hashedpassword,
-					email: email,
-				},
-			}
-		)
+      await sequelize.query(
+        'INSERT INTO users (user_name, user_email, user_password) VALUES ($user_name, $user_email, $user_password)', 
+        {
+          bind: {
+            user_name: user_name,
+            user_password: hashedpassword,
+            user_email: user_email,
+          },
+        }
+      )  
+    
   }
 
-  // Request response
   return res.status(201).json({
     message: "Registration succeeded. Please log in.",
   });
 };
 
 exports.login = async (req, res) => {
-  // Place candidate email and password into local variables
-  const { email, password: canditatePassword } = req.body;
-
-  // Check if user with that email exits in db
-  // prettier-ignore
-  const [user, metadata] = await sequelize.query(
-		'SELECT * FROM users WHERE email = $email LIMIT 1;', {
-		bind: { email },
+  const { user_name, user_email, user_password: canditatePassword } = req.body;
+  
+  const [users, metadata] = await sequelize.query(
+		'SELECT * FROM users WHERE user_email = $user_email LIMIT 1;', {
+		bind: { user_email },
 		type: QueryTypes.SELECT
 	})
 
-  console.log(user);
+  console.log(users);
 
-  if (!user) throw new UnauthenticatedError("Invalid Credentials");
+  if (!users) throw new UnauthenticatedError("Invalid Credentials");
 
-  // Check if password is correct
-  // @ts-ignore
   const isPasswordCorrect = await bcrypt.compare(
     canditatePassword,
-    user.password
+    users.user_password
   );
   if (!isPasswordCorrect) throw new UnauthenticatedError("Invalid Credentials");
 
-  // Create JWT payload (aka JWT contents)
   const jwtPayload = {
-    // @ts-ignore
-    userId: user.id,
-    // @ts-ignore
-    email: user.email,
-    role: user["is_admin"] === 1 ? userRoles.ADMIN : userRoles.USER,
+    id: users.id,
+    user_name: users.user_name,
+    user_email: users.user_email,
+    user_role: users["is_admin"] === 1 ? userRoles.ADMIN : userRoles.USER,
   };
 
-  // Create the JWT token
   const jwtToken = jwt.sign(jwtPayload, process.env.JWT_SECRET, {
-    expiresIn: "1h" /* 1d */,
+    expiresIn: "1d",
   });
 
-  // Return the token
-  return res.json({ token: jwtToken, user: jwtPayload });
+  return res.json({ token: jwtToken, users: jwtPayload });
 };

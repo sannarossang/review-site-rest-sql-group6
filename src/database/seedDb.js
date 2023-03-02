@@ -1,6 +1,9 @@
 const { sequelize } = require("./config");
+const bcrypt = require("bcrypt");
 
 const seedTailorshopsDb = async () => {
+
+
   try {
     await sequelize.query(`DROP TABLE IF EXISTS reviews;`);
     await sequelize.query(`DROP TABLE IF EXISTS tailorshops;`);
@@ -13,7 +16,7 @@ const seedTailorshopsDb = async () => {
             user_name TEXT NOT NULL,
             user_email TEXT NOT NULL,
             user_password TEXT NOT NULL,
-            user_role TEXT NOT NULL, 
+            user_role TEXT, 
             is_admin BOOLEAN CHECK (is_admin IN (0,1))
         );`);
 
@@ -46,21 +49,30 @@ const seedTailorshopsDb = async () => {
             FOREIGN KEY(fk_tailorshop_id) REFERENCES tailorshops(id)
         );`);
 
-    let usersInsertQuery = `INSERT INTO users(user_name, user_email, user_password, user_role, is_admin) VALUES 
-        ("firstuser", "firstuser@gmail.com", "firstuser123", "user", 0), 
-        ("seconduser", "seconduser@gmail.com", "seconduser", "user", 0),
-        ("adminuser", "adminuser@gmail.com", "adminuser123", "admin", 1),
-        ("firstowneruser", "firstowneruser@gmail.com", "firstowneruser123", "owner", 0)`;
+        const salt = await bcrypt.genSalt(10);
+        const firstUserPassword = "firstuser123"
+       const hashedpass1 = await bcrypt.hash(firstUserPassword, salt);
+      
+        const secondUserPassword = "seconduser123"
+        const hashedpass2 = await bcrypt.hash(secondUserPassword, salt);
+      
+        const adminPassword = "admin123"
+        const hashedpass3 = await bcrypt.hash(adminPassword, salt);
+        
+        const ownerPassword = "owner123"
+        const hashedpass4 = await bcrypt.hash(ownerPassword, salt);
 
-    await sequelize.query(usersInsertQuery, {
-      bind: usersInsertQuery,
-    });
+    let usersInsertQuery = `INSERT INTO users(user_name, user_email, user_password, user_role, is_admin) VALUES 
+        ("firstuser", "firstuser@gmail.com", "${hashedpass1}" , "user", 0), 
+        ("seconduser", "seconduser@gmail.com", "${hashedpass2}", "user", 0),
+        ("adminuser", "adminuser@gmail.com", "${hashedpass3}", "admin", 1),
+        ("firstowneruser", "firstowneruser@gmail.com", "${hashedpass4}", "owner", 0)`;
+
+    await sequelize.query(usersInsertQuery);
 
     let citiesInsertQuery = `INSERT INTO cities(city_name) VALUES ("Stockholm"), ("Gothenburg"), ("Malmö")`;
 
-    await sequelize.query(citiesInsertQuery, {
-      bind: citiesInsertQuery,
-    });
+    await sequelize.query(citiesInsertQuery);
 
     let tailorshopsInsertQuery = `INSERT INTO tailorshops (shop_name, shop_description, shop_address, fk_user_id, fk_city_id) VALUES 
     ("first tailor", "first tailor description lorem ipsum", "first tailor street 1", (SELECT id FROM users WHERE user_email = 'firstuser@gmail.com'), (SELECT id FROM cities WHERE city_name = 'Stockholm')), 

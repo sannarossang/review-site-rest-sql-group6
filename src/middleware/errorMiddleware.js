@@ -4,6 +4,8 @@ exports.errorMiddleware = (error, req, res, next) => {
     message: error.message || "Something went wrong! Please try again later!",
   };
 
+  console.error(error)
+
   if (error.name === "ValidationError") {
     customError.validationErrors = Object.values(error.errors).map(
       (item) => item.message
