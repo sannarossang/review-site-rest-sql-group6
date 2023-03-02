@@ -128,7 +128,8 @@ exports.updateTailorshopById = async (req, res) => {
   const [updatedTailorshop] = await sequelize.query(
     `UPDATE tailorshops
   SET shop_name = $tailorshopName, shop_description = $tailorshopDescription, shop_address = $tailorshopAddress, fk_user_id = $tailorshopUser, fk_city_id = $tailorshopCity
-  WHERE id = $tailorshopId`,
+  WHERE id = $tailorshopId
+  RETURNING *`,
     {
       bind: {
         tailorshopUser: userResults[0].id,
@@ -138,7 +139,6 @@ exports.updateTailorshopById = async (req, res) => {
         tailorshopAddress: shop_address,
         tailorshopId: tailorshopId,
       },
-      type: QueryTypes.UPDATE, //får inte tillbaka hela objektet
     }
   );
   return res.json(updatedTailorshop);
