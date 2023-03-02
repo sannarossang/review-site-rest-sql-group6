@@ -13,11 +13,11 @@ const {
 // } = require("../middleware/authenticationMiddleware");
 
 router.get(
-  "/tailorshop/reviews",
+  "/reviews",
   /*isAuthenticated, authorizeRoles(userRoles.ADMIN)*/ getAllReviews
 );
-router.get("/tailorshop/:tailorshopId/reviews/:reviewId", /*isAuthenticated,*/ getReviewById);
-router.post("/tailorshop/:tailorshopId/reviews", createNewReview);
+router.get("/reviews/:reviewId", /*isAuthenticated,*/ getReviewById);
+router.post("/reviews", createNewReview);
 router.put("/tailorshop/reviews/:reviewId", updateReviewById);
 router.delete("/tailorshop/reviews/:reviewId", /*isAuthenticated,*/ deleteReviewById);
 
