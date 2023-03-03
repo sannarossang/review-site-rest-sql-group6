@@ -1,5 +1,4 @@
 const express = require("express");
-const { userRoles } = require("../constants/users");
 const router = express.Router();
 const {
   getAllReviews,
@@ -13,11 +12,7 @@ const {
   authorizeRoles,
 } = require("../middleware/authenticationMiddleware");
 
-router.get(
-  "/reviews",
-  isAuthenticated,
-  /*authorizeRoles(userRoles.ADMIN),*/ getAllReviews
-);
+router.get("/reviews", isAuthenticated, getAllReviews);
 router.get("/reviews/:reviewId", isAuthenticated, getReviewById);
 router.post("/:tailorshopId/reviews", isAuthenticated, createNewReview);
 router.put(

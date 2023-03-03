@@ -1,5 +1,4 @@
 const express = require("express");
-const { userRoles } = require("../constants/users");
 const router = express.Router();
 const {
   getAllTailorshops,
@@ -14,11 +13,7 @@ const {
   authorizeRoles,
 } = require("../middleware/authenticationMiddleware");
 
-router.get(
-  "/",
-  isAuthenticated,
-  /*authorizeRoles(userRoles.ADMIN)*/ getAllTailorshops
-);
+router.get("/", isAuthenticated, getAllTailorshops);
 router.get("/:tailorshopId", isAuthenticated, getTailorshopById);
 router.get("/city/:city", isAuthenticated, getTailorshopByCity);
 router.post("/", isAuthenticated, createNewTailorshop);

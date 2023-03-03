@@ -3,7 +3,6 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { sequelize } = require("../database/config");
 const { QueryTypes } = require("sequelize");
-const { userRoles } = require("../constants/users");
 
 exports.register = async (req, res) => {
   const { user_name, user_password, user_email } = req.body;
@@ -17,27 +16,26 @@ exports.register = async (req, res) => {
 
   if (!results || results.length < 1) {
     await sequelize.query(
-			'INSERT INTO users (user_name, user_email, user_password, is_admin) VALUES ($user_name, $user_email, $user_password, TRUE)', 
-			{
-				bind: {
+      "INSERT INTO users (user_name, user_email, user_password, is_admin) VALUES ($user_name, $user_email, $user_password, TRUE)",
+      {
+        bind: {
           user_name: user_name,
-					user_password: hashedpassword,
-					user_email: user_email
-				}
-			}
-		)
+          user_password: hashedpassword,
+          user_email: user_email,
+        },
+      }
+    );
   } else {
-      await sequelize.query(
-        'INSERT INTO users (user_name, user_email, user_password) VALUES ($user_name, $user_email, $user_password)', 
-        {
-          bind: {
-            user_name: user_name,
-            user_password: hashedpassword,
-            user_email: user_email,
-          },
-        }
-      )  
-    
+    await sequelize.query(
+      "INSERT INTO users (user_name, user_email, user_password) VALUES ($user_name, $user_email, $user_password)",
+      {
+        bind: {
+          user_name: user_name,
+          user_password: hashedpassword,
+          user_email: user_email,
+        },
+      }
+    );
   }
 
   return res.status(201).json({
@@ -47,14 +45,14 @@ exports.register = async (req, res) => {
 
 exports.login = async (req, res) => {
   const { user_name, user_email, user_password: canditatePassword } = req.body;
-  
-  const [users, metadata] = await sequelize.query(
-		'SELECT * FROM users WHERE user_email = $user_email LIMIT 1;', {
-		bind: { user_email },
-		type: QueryTypes.SELECT
-	})
 
-  console.log(users);
+  const [users] = await sequelize.query(
+    "SELECT * FROM users WHERE user_email = $user_email LIMIT 1;",
+    {
+      bind: { user_email },
+      type: QueryTypes.SELECT,
+    }
+  );
 
   if (!users) throw new UnauthenticatedError("Invalid Credentials");
 
@@ -68,7 +66,7 @@ exports.login = async (req, res) => {
     id: users.id,
     user_name: users.user_name,
     user_email: users.user_email,
-    user_role: users["is_admin"] === 1 ? userRoles.ADMIN : userRoles.USER,
+    user_role: users["is_admin"] === 1,
   };
 
   const jwtToken = jwt.sign(jwtPayload, process.env.JWT_SECRET, {
