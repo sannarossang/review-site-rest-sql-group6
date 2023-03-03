@@ -13,19 +13,20 @@ exports.getAllTailorshops = async (req, res) => {
 exports.getTailorshopById = async (req, res) => {
   const tailorshopId = req.params.tailorshopId;
 
-  const [results, metadata] = await sequelize.query(
+  const [results] = await sequelize.query(
     `SELECT t.id, t.shop_name, t.shop_description, t.shop_address
         FROM tailorshops t WHERE t.id = $tailorshopId;`,
     {
       bind: { tailorshopId: tailorshopId },
+      type: QueryTypes.SELECT,
     }
   );
 
   if (!results || results.length == 0) {
-    throw new NotFoundError("We could not find the list you are looking for");
+    throw new NotFoundError("That tailorshop does not exists");
   }
 
-  return res.json(results[0]);
+  return res.json(results);
 };
 
 exports.getTailorshopByCity = async (req, res) => {
@@ -41,27 +42,24 @@ exports.getTailorshopByCity = async (req, res) => {
   );
 
   if (!results || results.length == 0) {
-    throw new NotFoundError("We could not find the list you are looking for");
+    throw new NotFoundError("That city does not exists.");
   }
 
   return res.json(results);
 };
 
 exports.createNewTailorshop = async (req, res) => {
-  const { shop_name, shop_description, shop_address, city, user_name } =
-    req.body;
-
-  //user_name bör bytas ut när auth är på plats, annars kan man skriva in vad som
+  const { shop_name, shop_description, shop_address, city } = req.body;
 
   const [userResults] = await sequelize.query(
     `SELECT * FROM users u
     WHERE UPPER(u.user_name) = UPPER($user);`, //hämtar bara om filtrering stämmer, dvs att det som skrivit i bodyn finns som username i tabellen
     {
-      bind: { user: user_name }, //koppling mellan $user och det som skrivs in
+      bind: { user: req.users.user_name },
     }
   );
   if (userResults.length === 0) {
-    //returnera badrequest att användaren inte finns
+    throw new NotFoundError("That user does not exists.");
   }
 
   const [cityResults] = await sequelize.query(
@@ -72,7 +70,7 @@ exports.createNewTailorshop = async (req, res) => {
     }
   );
   if (cityResults.length === 0) {
-    //returnera badrequest att staden inte finns
+    throw new NotFoundError("That city does not exists.");
   }
 
   const [newTailorshopId] = await sequelize.query(
@@ -100,18 +98,18 @@ exports.createNewTailorshop = async (req, res) => {
 exports.updateTailorshopById = async (req, res) => {
   const tailorshopId = req.params.tailorshopId;
 
-  const { shop_name, shop_description, shop_address, city, user_name } =
-    req.body;
+  const { shop_name, shop_description, shop_address, city } = req.body;
 
   const [userResults] = await sequelize.query(
     `SELECT * FROM users u
     WHERE UPPER(u.user_name) = UPPER($user);`,
     {
-      bind: { user: user_name },
+      bind: { user: req.users.user_name },
     }
   );
+
   if (userResults.length === 0) {
-    //returnera badrequest att tailorshopen inte finns
+    throw new NotFoundError("That user does not exists.");
   }
 
   const [cityResults] = await sequelize.query(
@@ -121,8 +119,23 @@ exports.updateTailorshopById = async (req, res) => {
       bind: { city: city },
     }
   );
+
   if (cityResults.length === 0) {
-    //returnera badrequest att staden inte finns
+    throw new NotFoundError("That city does not exists.");
+  }
+
+  const [tailorshopResult] = await sequelize.query(
+    `SELECT * FROM tailorshops t  
+    WHERE t.id = $id;`,
+    {
+      bind: { id: tailorshopId },
+    }
+  );
+
+  if (userResults[0].id !== tailorshopResult[0].fk_user_id) {
+    throw new UnauthorizedError(
+      "You are not allowed to update this tailorshop"
+    );
   }
 
   const [updatedTailorshop] = await sequelize.query(
@@ -141,7 +154,7 @@ exports.updateTailorshopById = async (req, res) => {
       },
     }
   );
-  return res.json(updatedTailorshop);
+  return res.json(updatedTailorshop[0]);
 };
 
 exports.deleteTailorshopById = async (req, res) => {

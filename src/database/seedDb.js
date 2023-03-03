@@ -2,8 +2,6 @@ const { sequelize } = require("./config");
 const bcrypt = require("bcrypt");
 
 const seedTailorshopsDb = async () => {
-
-
   try {
     await sequelize.query(`DROP TABLE IF EXISTS reviews;`);
     await sequelize.query(`DROP TABLE IF EXISTS tailorshops;`);
@@ -49,18 +47,18 @@ const seedTailorshopsDb = async () => {
             FOREIGN KEY(fk_tailorshop_id) REFERENCES tailorshops(id)
         );`);
 
-        const salt = await bcrypt.genSalt(10);
-        const firstUserPassword = "firstuser123"
-       const hashedpass1 = await bcrypt.hash(firstUserPassword, salt);
-      
-        const secondUserPassword = "seconduser123"
-        const hashedpass2 = await bcrypt.hash(secondUserPassword, salt);
-      
-        const adminPassword = "admin123"
-        const hashedpass3 = await bcrypt.hash(adminPassword, salt);
-        
-        const ownerPassword = "owner123"
-        const hashedpass4 = await bcrypt.hash(ownerPassword, salt);
+    const salt = await bcrypt.genSalt(10);
+    const firstUserPassword = "firstuser123";
+    const hashedpass1 = await bcrypt.hash(firstUserPassword, salt);
+
+    const secondUserPassword = "seconduser123";
+    const hashedpass2 = await bcrypt.hash(secondUserPassword, salt);
+
+    const adminPassword = "admin123";
+    const hashedpass3 = await bcrypt.hash(adminPassword, salt);
+
+    const ownerPassword = "owner123";
+    const hashedpass4 = await bcrypt.hash(ownerPassword, salt);
 
     let usersInsertQuery = `INSERT INTO users(user_name, user_email, user_password, user_role, is_admin) VALUES 
         ("firstuser", "firstuser@gmail.com", "${hashedpass1}" , "user", 0), 
@@ -97,7 +95,7 @@ const seedTailorshopsDb = async () => {
 
     let reviewsInsertQuery = `INSERT INTO reviews(review_text, review_score, fk_user_id, fk_tailorshop_id) VALUES 
     ("Review 1 lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.", null, (SELECT id FROM users WHERE user_name = 'firstuser'), (SELECT id FROM tailorshops WHERE shop_name = 'first tailor')),
-    ("Review 2 ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur?", null, (SELECT id FROM users WHERE user_name = 'seconduser'), (SELECT id FROM tailorshops WHERE shop_name = 'second tailor')) ,
+    ("Review 2 ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur?", 2, (SELECT id FROM users WHERE user_name = 'seconduser'), (SELECT id FROM tailorshops WHERE shop_name = 'second tailor')) ,
     ("Review 3 emo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. ", null, (SELECT id FROM users WHERE user_name = 'adminuser'), (SELECT id FROM tailorshops WHERE shop_name = 'third tailor')),
     ("Review 4 Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum. Sed ut perspiciatis", null, (SELECT id FROM users WHERE user_name = 'firstowneruser'), (SELECT id FROM tailorshops WHERE shop_name = 'fourth tailor')),
     ("Review 5 ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea ", null, (SELECT id FROM users WHERE user_name = 'firstuser'), (SELECT id FROM tailorshops WHERE shop_name = 'fifth tailor')),

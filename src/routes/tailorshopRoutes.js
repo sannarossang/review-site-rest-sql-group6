@@ -9,19 +9,20 @@ const {
   updateTailorshopById,
   deleteTailorshopById,
 } = require("../controllers/tailorshopController");
-// const {
-//   isAuthenticated,
-//   authorizeRoles,
-// } = require("../middleware/authenticationMiddleware");
+const {
+  isAuthenticated,
+  authorizeRoles,
+} = require("../middleware/authenticationMiddleware");
 
 router.get(
   "/",
-  /*isAuthenticated, authorizeRoles(userRoles.ADMIN)*/ getAllTailorshops
+  isAuthenticated,
+  /*authorizeRoles(userRoles.ADMIN)*/ getAllTailorshops
 );
-router.get("/:tailorshopId", /*isAuthenticated,*/ getTailorshopById);
-router.get("/city/:city", /*isAuthenticated,*/ getTailorshopByCity);
-router.post("/", createNewTailorshop);
-router.put("/:tailorshopId", updateTailorshopById);
-router.delete("/:tailorshopId", /*isAuthenticated,*/ deleteTailorshopById);
+router.get("/:tailorshopId", isAuthenticated, getTailorshopById);
+router.get("/city/:city", isAuthenticated, getTailorshopByCity);
+router.post("/", isAuthenticated, createNewTailorshop);
+router.put("/:tailorshopId", isAuthenticated, updateTailorshopById);
+router.delete("/:tailorshopId", isAuthenticated, deleteTailorshopById);
 
 module.exports = router;

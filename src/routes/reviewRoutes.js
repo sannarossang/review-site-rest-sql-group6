@@ -8,17 +8,23 @@ const {
   updateReviewById,
   deleteReviewById,
 } = require("../controllers/reviewController");
-//   isAuthenticated,
-//   authorizeRoles,
-// } = require("../middleware/authenticationMiddleware");
+const {
+  isAuthenticated,
+  authorizeRoles,
+} = require("../middleware/authenticationMiddleware");
 
 router.get(
   "/reviews",
-  /*isAuthenticated, authorizeRoles(userRoles.ADMIN)*/ getAllReviews
+  isAuthenticated,
+  /*authorizeRoles(userRoles.ADMIN),*/ getAllReviews
 );
-router.get("/reviews/:reviewId", /*isAuthenticated,*/ getReviewById);
-router.post("/:tailorshopId/reviews", createNewReview);
-router.put("/:tailorshopId/reviews/:reviewId", updateReviewById);
-router.delete("/reviews/:reviewId", /*isAuthenticated,*/ deleteReviewById);
+router.get("/reviews/:reviewId", isAuthenticated, getReviewById);
+router.post("/:tailorshopId/reviews", isAuthenticated, createNewReview);
+router.put(
+  "/:tailorshopId/reviews/:reviewId",
+  isAuthenticated,
+  updateReviewById
+);
+router.delete("/reviews/:reviewId", isAuthenticated, deleteReviewById);
 
 module.exports = router;
