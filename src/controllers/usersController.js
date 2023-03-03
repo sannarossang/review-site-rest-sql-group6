@@ -29,21 +29,19 @@ exports.updateUserById = async (req, res) => {
         user_name,
         user_email,
         user_password,
-        user_role,
         is_admin
     } = req.body;
 
     if(!userId) throw new NotFoundError('That user does not exist');
 
     const [updatedUser] = await sequelize.query(
-        `UPDATE users SET user_name = $user_name, user_email = $user_email, user_password = $user_password, user_role = $user_role, is_admin = $is_admin WHERE id= $userId RETURNING *`,
+        `UPDATE users SET user_name = $user_name, user_email = $user_email, user_password = $user_password, is_admin = $is_admin WHERE id= $userId RETURNING *`,
         {
             bind: {
                 userId: userId,
                 user_name: user_name,
                 user_email: user_email,
                 user_password: user_password,
-                user_role: user_role,
                 is_admin: is_admin
             },
 
@@ -57,9 +55,6 @@ exports.updateUserById = async (req, res) => {
 
 exports.deleteUserById = async (req, res) => {
     const userId = req.params.userId
-
-
-
 
     const [tailorshopCount] = await sequelize.query(
         `SELECT COUNT(*) AS tailorshopCount FROM tailorshops t WHERE t.fk_user_id = $userId;`,
@@ -86,6 +81,7 @@ exports.deleteUserById = async (req, res) => {
                     await sequelize.query('DELETE FROM users WHERE id = $userId', {
                         bind: { userId: userId}
                     }) 
+                    console.log("User deleted successfully!")
              //   }    
         }
 

@@ -19,7 +19,7 @@ exports.isAuthenticated = async (req, res, next) => {
 
     req.users = {
       id: payload.id,
-      user_role: payload.user_role,
+      is_admin: payload.is_admin,
       user_name: payload.user_name,
     };
 

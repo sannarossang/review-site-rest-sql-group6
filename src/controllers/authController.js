@@ -6,7 +6,7 @@ const { QueryTypes } = require("sequelize");
 const { userRoles } = require("../constants/users");
 
 exports.register = async (req, res) => {
-  const { user_name, user_password, user_email } = req.body;
+  const { user_name, user_password, user_email, is_admin} = req.body;
 
   const salt = await bcrypt.genSalt(10);
   const hashedpassword = await bcrypt.hash(user_password, salt);
@@ -17,23 +17,25 @@ exports.register = async (req, res) => {
 
   if (!results || results.length < 1) {
     await sequelize.query(
-			'INSERT INTO users (user_name, user_email, user_password, is_admin) VALUES ($user_name, $user_email, $user_password, TRUE)', 
+			'INSERT INTO users (user_name, user_email, user_password, is_admin) VALUES ($user_name, $user_email, $user_password, $is_admin)', 
 			{
 				bind: {
           user_name: user_name,
 					user_password: hashedpassword,
-					user_email: user_email
+					user_email: user_email,
+          is_admin: is_admin
 				}
 			}
 		)
   } else {
       await sequelize.query(
-        'INSERT INTO users (user_name, user_email, user_password) VALUES ($user_name, $user_email, $user_password)', 
+        'INSERT INTO users (user_name, user_email, user_password, is_admin) VALUES ($user_name, $user_email, $user_password, $is_admin)', 
         {
           bind: {
             user_name: user_name,
             user_password: hashedpassword,
             user_email: user_email,
+            is_admin: is_admin
           },
         }
       )  
@@ -46,7 +48,7 @@ exports.register = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-  const { user_name, user_email, user_password: canditatePassword } = req.body;
+  const { user_name, user_email, user_password: canditatePassword, is_admin } = req.body;
   
   const [users, metadata] = await sequelize.query(
 		'SELECT * FROM users WHERE user_email = $user_email LIMIT 1;', {
@@ -68,7 +70,8 @@ exports.login = async (req, res) => {
     id: users.id,
     user_name: users.user_name,
     user_email: users.user_email,
-    user_role: users["is_admin"] === 1 ? userRoles.ADMIN : userRoles.USER,
+    is_admin: users.is_admin === 1 || users.is_admin === 0,
+    //user_role: users["is_admin"] === 1 ? userRoles.ADMIN : userRoles.USER,
   };
 
   const jwtToken = jwt.sign(jwtPayload, process.env.JWT_SECRET, {
