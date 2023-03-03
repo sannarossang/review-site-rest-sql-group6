@@ -81,11 +81,12 @@ exports.updateReviewById = async (req, res) => {
 
   const [userResults] = await sequelize.query(
     `SELECT * FROM users u
-    WHERE UPPER(u.user_name) = UPPER($user);`,
+    WHERE UPPER(u.user_name) = UPPER($user) AND psw = $psw`,
     {
       bind: { user: req.users.user_name },
     }
   );
+
   if (userResults.length === 0) {
     throw new NotFoundError("That user does not exists.");
   }
@@ -118,7 +119,10 @@ exports.updateReviewById = async (req, res) => {
     throw new NotFoundError("That review does not belong to this tailorshop");
   }
 
-  if (userResults[0].id !== tailorshopResult[0].fk_user_id) {
+  if (
+    userResults[0].id !== tailorshopResult[0].fk_user_id ||
+    !userResults[0].is_admin
+  ) {
     throw new UnauthorizedError("Your user does not own this tailorshop");
   }
 
@@ -148,4 +152,6 @@ exports.deleteReviewById = async (req, res) => {
     type: QueryTypes.DELETE,
   });
   return res.sendStatus(204);
+
+  //måste hantera via användaren?
 };
