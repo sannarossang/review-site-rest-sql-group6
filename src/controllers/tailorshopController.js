@@ -1,5 +1,4 @@
 const { QueryError, QueryTypes } = require("sequelize");
-const { userRoles } = require("../constants/users");
 const { sequelize } = require("../database/config");
 const { NotFoundError, UnauthorizedError } = require("../utils/errors");
 

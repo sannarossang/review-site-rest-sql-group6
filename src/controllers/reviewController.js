@@ -1,5 +1,4 @@
 const { QueryTypes } = require("sequelize");
-const { userRoles } = require("../constants/users");
 const { sequelize } = require("../database/config");
 const { UnauthorizedError, NotFoundError } = require("../utils/errors");
 
@@ -81,7 +80,7 @@ exports.updateReviewById = async (req, res) => {
 
   const [userResults] = await sequelize.query(
     `SELECT * FROM users u
-    WHERE UPPER(u.user_name) = UPPER($user) AND psw = $psw`,
+    WHERE UPPER(u.user_name) = UPPER($user)`,
     {
       bind: { user: req.users.user_name },
     }

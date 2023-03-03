@@ -1,7 +1,9 @@
 const express = require("express");
-const { userRoles } = require("../constants/users");
 const router = express.Router();
-const {isAuthenticated, authorizeRoles} = require('../middleware/authenticationMiddleware')
+const {
+  isAuthenticated,
+  authorizeRoles,
+} = require("../middleware/authenticationMiddleware");
 const {
   getAllUsers,
   getUserById,

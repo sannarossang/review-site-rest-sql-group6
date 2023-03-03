@@ -3,7 +3,6 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const { sequelize } = require("../database/config");
 const { QueryTypes } = require("sequelize");
-const { userRoles } = require("../constants/users");
 
 exports.register = async (req, res) => {
   const { user_name, user_password, user_email, is_admin} = req.body;
