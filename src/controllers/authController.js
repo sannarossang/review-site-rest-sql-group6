@@ -47,10 +47,10 @@ exports.register = async (req, res) => {
 };
 
 exports.login = async (req, res) => {
-  const { user_name, user_email, user_password: canditatePassword, is_admin } = req.body;
+  const { user_email, user_password: canditatePassword } = req.body;
   
   const [users, metadata] = await sequelize.query(
-		'SELECT * FROM users WHERE user_email = $user_email LIMIT 1;', {
+		'SELECT * FROM users WHERE  user_email = $user_email LIMIT 1;', {
 		bind: { user_email },
 		type: QueryTypes.SELECT
 	})
@@ -70,7 +70,6 @@ exports.login = async (req, res) => {
     user_name: users.user_name,
     user_email: users.user_email,
     is_admin: users.is_admin === 1 || users.is_admin === 0,
-    //user_role: users["is_admin"] === 1 ? userRoles.ADMIN : userRoles.USER,
   };
 
   const jwtToken = jwt.sign(jwtPayload, process.env.JWT_SECRET, {

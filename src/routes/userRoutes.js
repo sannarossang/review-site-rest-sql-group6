@@ -7,17 +7,15 @@ const {
 const {
   getAllUsers,
   getUserById,
-  /*createNewUser,*/
   updateUserById,
   deleteUserById,
 } = require("../controllers/usersController");
 
 
 
-router.get( "/", isAuthenticated, /*authorizeRoles(userRoles.ADMIN),*/getAllUsers)
-router.get("/:userId", /*isAuthenticated,*/ getUserById);
-//router.post("/", createNewUser); //petter har inte dessa i sitt repo
-router.put("/:userId", isAuthenticated, updateUserById); //petter har inte dessa i sitt repo
-router.delete("/:userId", /*isAuthenticated,*/ deleteUserById);
+router.get( "/", isAuthenticated, getAllUsers) //hämtar data oavsätt om admin
+router.get("/:userId", isAuthenticated, getUserById); //hämtar data för det konto som är inloggad bara
+router.put("/:userId", isAuthenticated, updateUserById); 
+router.delete("/:userId", isAuthenticated, deleteUserById); //FUNKAR INTE med auth. 
 
 module.exports = router;
