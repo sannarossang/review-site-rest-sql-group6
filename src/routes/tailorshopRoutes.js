@@ -13,9 +13,9 @@ const {
   authorizeRoles,
 } = require("../middleware/authenticationMiddleware");
 
-router.get("/", isAuthenticated, getAllTailorshops);
-router.get("/:tailorshopId", isAuthenticated, getTailorshopById);
-router.get("/city/:city", isAuthenticated, getTailorshopByCity);
+router.get("/", getAllTailorshops);
+router.get("/:tailorshopId", getTailorshopById);
+router.get("/city/:city", getTailorshopByCity);
 router.post("/", isAuthenticated, createNewTailorshop);
 router.put("/:tailorshopId", isAuthenticated, updateTailorshopById);
 router.delete("/:tailorshopId", isAuthenticated, deleteTailorshopById);
