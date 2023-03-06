@@ -3,8 +3,64 @@ const { sequelize } = require("../database/config");
 const { UnauthorizedError, NotFoundError } = require("../utils/errors");
 
 exports.getAllReviews = async (req, res) => {
-  const [results] = await sequelize.query(`SELECT * FROM reviews`);
-  return res.json(results);
+  try{
+    const limit = Number(req.query.limit || 10);
+    const offset = Number(req.query.offset || 0);
+    const tailorshop = req.query.shop_name;
+
+    if (!tailorshop) {
+      console.log(req.query);
+      const [results] = await sequelize.query(
+        `SELECT r.id, r.review_text, t.shop_name, r.review_score, r.fk_user_id, r.fk_tailorshop_id
+         FROM reviews r
+         JOIN tailorshops t ON r.fk_tailorshop_id = t.id
+         ORDER BY r.id ASC
+         LIMIT $limit OFFSET $offset;`,
+        {
+          bind: {
+            shop_name: tailorshop,
+            limit: limit,
+            offset: offset,
+          },
+        }
+      );
+      return res.json({
+        data: results,
+        metadata: {
+          limit: limit,
+          offset: offset,
+        },
+      });
+    } else if(tailorshop){
+      console.log(req.query);
+      const [results] = await sequelize.query(
+        `SELECT r.id, r.review_text, t.shop_name, r.review_score, r.fk_user_id, r.fk_tailorshop_id
+         FROM reviews r
+         JOIN tailorshops t ON r.fk_tailorshop_id = t.id
+         WHERE t.shop_name = $shop_name
+         ORDER BY r.id ASC
+         LIMIT $limit OFFSET $offset;`,
+        {
+          bind: {
+            shop_name: tailorshop,
+            limit: limit,
+            offset: offset,
+          },
+        }
+      );
+      return res.json({
+        data: results,
+        metadata: {
+          limit: limit,
+          offset: offset,
+        },
+      });
+    }
+    
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: error.message });
+  }
 };
 
 exports.getReviewById = async (req, res) => {

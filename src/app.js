@@ -12,7 +12,7 @@ const app = express();
 
 app.use(express.json());
 app.use(helmet());
-app.use(cors())
+app.use(cors());
 
 app.use((req, res, next) => {
   console.log(`Processing ${req.method} request to ${req.path}`);
