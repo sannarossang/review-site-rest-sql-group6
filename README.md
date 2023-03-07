@@ -36,3 +36,8 @@ Down below you can find all test-users, emails and password.
 | seconduser | seconduser@gmail.com | seconduser123 |
 | thirduser | thirduser@gmail.com | thirduser123 |
 | adminuser | adminuser@gmail.com | admin123 |
+
+## DBDiagram 📊
+
+![db](https://osody.se/db.png)
+![db-links](https://osody.se/db-links.png)
