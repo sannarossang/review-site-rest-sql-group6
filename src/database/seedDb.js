@@ -14,7 +14,7 @@ const seedTailorshopsDb = async () => {
             user_name TEXT NOT NULL,
             user_email TEXT NOT NULL,
             user_password TEXT NOT NULL,
-            is_admin BOOLEAN CHECK (is_admin IN (0,1))
+            is_admin BOOLEAN CHECK (is_admin IN (0,1)) 
         );`);
 
     await sequelize.query(`

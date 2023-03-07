@@ -36,36 +36,19 @@ exports.getAllUsers = async (req, res) => {
 };
 exports.getUserById = async (req, res) => {
   try {
-   const [users] = await sequelize.query(`SELECT * FROM users u WHERE u.id = $userId;`, 
+   const [user] = await sequelize.query(`SELECT u.id, u.user_name, u.user_email, u.is_admin FROM users u WHERE u.id = $userId;`, 
     {
       bind: {
-        userId: req.users.id,
+        userId: req.params.userId,
       }
 
     })
 
-    if(users.length === 0) {
+    if(user.length === 0) {
       throw new NotFoundError("That user does not exist.");
-    }
+    } else {
+       return res.json(user);
 
-    if(users[0].id === req.users.id || users[0].is_admin === true) {
-
-      const [user] = await sequelize.query(
-        "SELECT u.id, u.user_name, u.user_email FROM users u WHERE u.id = $userId",
-        {
-          bind: { userId: req.users.id },
-          type: QueryTypes.SELECT,
-        }
-      );
-      return res.json(user);
-
-    
-    }  else {
-
-      throw new UnauthorizedError(
-        "You are not allowed view this user"
-      );
-   
     }
   } catch (error) {
     console.error(error);
@@ -76,9 +59,12 @@ exports.getUserById = async (req, res) => {
 exports.updateUserById = async (req, res) => {
   try {
     const userId = req.params.userId;
-    const { user_name, user_email, user_password, is_admin } = req.body;
+    const { user_name, user_email, user_password } = req.body;
 
     const salt = await bcrypt.genSalt(10);
+
+    console.log(user_password, salt)
+
     const hashedpass = await bcrypt.hash(user_password, salt);
 
     const [user] = await sequelize.query(
@@ -91,22 +77,26 @@ exports.updateUserById = async (req, res) => {
 
     if (!user) throw new NotFoundError("That user does not exist");
 
-    const [updatedUser] = await sequelize.query(
-      `UPDATE users SET user_name = $user_name, user_email = $user_email, user_password = $user_password, is_admin = $is_admin WHERE id= $userId RETURNING *`,
-      {
-        bind: {
-          userId: userId,
-          user_name: user_name,
-          user_email: user_email,
-          user_password: hashedpass,
-          is_admin: is_admin,
-        },
-      }
-    );
+    if(userId != req.users.id && !req.users.is_admin) {
 
-    console.log(updatedUser);
-    return res.json(updatedUser);
-  } catch (error) {
+      throw new UnauthorizedError("Unauthorized Access");
+
+    } else {
+
+      const [updatedUser] = await sequelize.query(
+        `UPDATE users SET user_name = $user_name, user_email = $user_email, user_password = $user_password WHERE id= $userId RETURNING id, user_name, user_email, is_admin`,
+        {
+          bind: {
+            userId: userId,
+            user_name: user_name,
+            user_email: user_email,
+            user_password: hashedpass,
+          },
+        }
+      );
+      console.log(updatedUser);
+      return res.json(updatedUser);
+    } } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });
   }
@@ -116,6 +106,12 @@ exports.deleteUserById = async (req, res) => {
   try {
     const userId = req.params.userId;
 
+    if (userId != req.users?.id && !req.users.is_admin) {
+
+      throw new UnauthorizedError("Unauthorized Access");
+
+    }
+
     const [tailorshopCount] = await sequelize.query(
       `SELECT COUNT(*) AS tailorshopCount FROM tailorshops t WHERE t.fk_user_id = $userId;`,
       {
@@ -123,7 +119,6 @@ exports.deleteUserById = async (req, res) => {
       }
     );
 
-    console.log(tailorshopCount);
     if (tailorshopCount[0].tailorshopCount > 0) {
       throw new UnauthorizedError(
         "You are owner of tailorshops and need to delete your shops before deleting your account"
@@ -134,19 +129,12 @@ exports.deleteUserById = async (req, res) => {
         bind: { userId: userId },
       });
 
-      if (userId != req.users?.userId || !req.users.is_admin) {
+      await sequelize.query("DELETE FROM users WHERE id = $userId", {
+        bind: { userId: userId },
+      });
 
-        throw new UnauthorizedError("Unauthorized Access");
+      console.log("User deleted successfully!");
 
-      } else {
-
-        await sequelize.query("DELETE FROM users WHERE id = $userId", {
-          bind: { userId: userId },
-        });
-
-        console.log("User deleted successfully!");
-
-      }
     }
     return res.sendStatus(204);
     

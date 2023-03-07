@@ -16,25 +16,23 @@ exports.register = async (req, res) => {
 
   if (!results || results.length < 1) {
     await sequelize.query(
-			'INSERT INTO users (user_name, user_email, user_password, is_admin) VALUES ($user_name, $user_email, $user_password, $is_admin)', 
+			'INSERT INTO users (user_name, user_email, user_password, is_admin) VALUES ($user_name, $user_email, $user_password, TRUE)', 
 			{
 				bind: {
           user_name: user_name,
 					user_password: hashedpassword,
-					user_email: user_email,
-          is_admin: is_admin
+					user_email: user_email
 				}
 			}
 		)
   } else {
       await sequelize.query(
-        'INSERT INTO users (user_name, user_email, user_password, is_admin) VALUES ($user_name, $user_email, $user_password, $is_admin)', 
+        'INSERT INTO users (user_name, user_email, user_password, is_admin) VALUES ($user_name, $user_email, $user_password, FALSE)', 
         {
           bind: {
             user_name: user_name,
             user_password: hashedpassword,
-            user_email: user_email,
-            is_admin: is_admin
+            user_email: user_email
           },
         }
       )  
@@ -69,7 +67,7 @@ exports.login = async (req, res) => {
     id: users.id,
     user_name: users.user_name,
     user_email: users.user_email,
-    is_admin: users.is_admin === 1 || users.is_admin === 0,
+    is_admin: users.is_admin === 1 ,
   };
 
   const jwtToken = jwt.sign(jwtPayload, process.env.JWT_SECRET, {

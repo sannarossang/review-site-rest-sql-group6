@@ -13,9 +13,9 @@ const {
 
 
 
-router.get( "/", isAuthenticated, getAllUsers) //hämtar data oavsätt om admin
-router.get("/:userId", isAuthenticated, getUserById); //hämtar data för det konto som är inloggad bara
+router.get( "/", isAuthenticated, getAllUsers) 
+router.get("/:userId", getUserById);
 router.put("/:userId", isAuthenticated, updateUserById); 
-router.delete("/:userId", isAuthenticated, deleteUserById); //FUNKAR INTE med auth. 
+router.delete("/:userId", isAuthenticated, deleteUserById); 
 
 module.exports = router;
