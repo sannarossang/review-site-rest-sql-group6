@@ -1,6 +1,6 @@
 const { QueryTypes } = require("sequelize");
 const { sequelize } = require("../database/config");
-const { UnauthorizedError, NotFoundError } = require("../utils/errors");
+const { UnauthorizedError, NotFoundError, BadRequestError } = require("../utils/errors");
 
 exports.getAllReviews = async (req, res) => {
   try{
@@ -11,7 +11,6 @@ exports.getAllReviews = async (req, res) => {
 
 
     if (!tailorshop && !reviewScore) {
-      console.log(req.query);
       const [results] = await sequelize.query(
         `SELECT r.id, r.review_text, t.shop_name, r.review_score, r.fk_user_id, r.fk_tailorshop_id
          FROM reviews r
@@ -25,7 +24,10 @@ exports.getAllReviews = async (req, res) => {
             offset: offset,
           },
         }
-      );
+      );      
+      if (!results || !results[0]) {
+        throw new NotFoundError("We can't find any reviews");
+      }
       return res.json({
         data: results,
         metadata: {
@@ -34,7 +36,6 @@ exports.getAllReviews = async (req, res) => {
         },
       });
     } else if(tailorshop && !reviewScore){
-      console.log(req.query);
       const [results] = await sequelize.query(
         `SELECT r.id, r.review_text, t.shop_name, r.review_score, r.fk_user_id, r.fk_tailorshop_id
          FROM reviews r
@@ -49,7 +50,10 @@ exports.getAllReviews = async (req, res) => {
             offset: offset,
           },
         }
-      );
+      );      
+       if (results.length == 0) {
+        throw new NotFoundError("There is no reviews for that tailorshop");
+      }
       return res.json({
         data: results,
         metadata: {
@@ -59,10 +63,9 @@ exports.getAllReviews = async (req, res) => {
       });
     } else if(!tailorshop && reviewScore){
       if (!/^\d+$/.test(reviewScore) || reviewScore > 5) {
-        throw new NotFoundError("Input is invalid");
+        throw new BadRequestError("Input is invalid");
       }
       
-      console.log(req.query);
       const [results] = await sequelize.query(
         `SELECT r.id, r.review_text, t.shop_name, r.review_score, r.fk_user_id, r.fk_tailorshop_id
          FROM reviews r
@@ -88,9 +91,8 @@ exports.getAllReviews = async (req, res) => {
     }
     else if(tailorshop && reviewScore){
       if (!/^\d+$/.test(reviewScore) || reviewScore > 5) {
-        throw new NotFoundError("Input is invalid");
+        throw new BadRequestError("Input is invalid");
       }
-      console.log(req.query);
       const [results] = await sequelize.query(
         `SELECT r.id, r.review_text, t.shop_name, r.review_score, r.fk_user_id, r.fk_tailorshop_id
          FROM reviews r
@@ -108,6 +110,9 @@ exports.getAllReviews = async (req, res) => {
           },
         }
       );
+      if (!reviewScore || reviewScore > 5) {
+        throw new NotFoundError("No results found");
+      }
       return res.json({
         data: results,
         metadata: {
@@ -145,7 +150,7 @@ exports.getReviewById = async (req, res) => {
 };
 
 exports.createNewReview = async (req, res) => {
-  try{
+  try {
     const { review_text, review_score } = req.body;
 
     const [userResults] = await sequelize.query(
@@ -155,10 +160,6 @@ exports.createNewReview = async (req, res) => {
         bind: { user: req.users.user_name },
       }
     );
-
-    if (userResults.length === 0) {
-      throw new NotFoundError("That user does not exists.");
-    }
 
     const [tailorshopResult] = await sequelize.query(
       `SELECT * FROM tailorshops t
@@ -214,7 +215,7 @@ exports.updateReviewById = async (req, res) => {
 
     if (userResults.length === 0) {
       throw new NotFoundError("That user does not exists.");
-    }
+    } 
 
     const [tailorshopResult] = await sequelize.query(
       `SELECT * FROM tailorshops t
@@ -236,19 +237,30 @@ exports.updateReviewById = async (req, res) => {
       }
     );
 
+
+
+    if (
+      !userResults[0].is_admin &&
+      userResults[0].id !== reviewResult[0].fk_user_id
+    ) {
+      throw new UnauthorizedError(
+        "You are not allowed to update this review"
+      );
+    } else {
+
     if (tailorshopResult.length === 0) {
       throw new NotFoundError("That tailorshop does not exists.");
     }
 
     if (reviewResult[0].fk_tailorshop_id !== tailorshopResult[0].id) {
-      throw new NotFoundError("That review does not belong to this tailorshop");
+      throw new BadRequestError("That review does not belong to this tailorshop");
     }
 
     if (
-      userResults[0].id !== tailorshopResult[0].fk_user_id ||
-      !userResults[0].is_admin
+      !req.users.is_admin 
+      && userResults[0].id !== reviewResult[0].fk_user_id 
     ) {
-      throw new UnauthorizedError("Your user does not own this tailorshop");
+      throw new UnauthorizedError("Your user does not own this review");
     }
 
     const [updatedReview] = await sequelize.query(
@@ -267,6 +279,7 @@ exports.updateReviewById = async (req, res) => {
       }
     );
     return res.json(updatedReview[0]);
+  }
   }catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });
@@ -285,25 +298,30 @@ exports.deleteReviewById = async (req, res) => {
       }
     );
 
-    const [reviewIdResult] = await sequelize.query(
-      `SELECT * FROM tailorshops t  
-    WHERE t.id = $id;`,
+    const [reviewResult] = await sequelize.query(
+      `SELECT * FROM reviews r
+      WHERE r.id = $reviewId;`,
       {
-        bind: { id: reviewId },
+        bind: {
+          reviewId,
+        },
       }
     );
+    if (reviewResult.length === 0) {
+      throw new NotFoundError("That review does not exist!")
+    }
 
     if (
-      userResults[0].is_admin &&
-      userResults[0].id == reviewIdResult[0].fk_user_id
+      userResults[0].is_admin ||
+      userResults[0].id == reviewResult[0].fk_user_id
     ) {
       await sequelize.query(`DELETE FROM reviews WHERE id = $reviewId;`, {
         bind: { reviewId: reviewId },
         type: QueryTypes.DELETE,
       });
-    }else{
+    } else{
       throw new UnauthorizedError(
-        "You are not allowed to delete this tailorshop"
+        "You are not allowed to delete this review"
       );
     }
     return res.sendStatus(204);

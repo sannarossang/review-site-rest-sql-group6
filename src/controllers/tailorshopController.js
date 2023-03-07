@@ -1,6 +1,6 @@
 const { QueryTypes } = require("sequelize");
 const { sequelize } = require("../database/config");
-const { NotFoundError, UnauthorizedError } = require("../utils/errors");
+const { NotFoundError, UnauthorizedError, BadRequestError } = require("../utils/errors");
 
 exports.getAllTailorshops = async (req, res) => {
   try {
@@ -9,10 +9,8 @@ exports.getAllTailorshops = async (req, res) => {
     const city = req.query.city_name;
     const review = req.query.review_score;
 
-    //HÄMTA ALLA //om användaren inte skriver in en query för city och vill ha fram alla tailorshops
     if (!city && !review) {
-      console.log("inside first");
-      console.log(req.query);
+     
       const [tailorshops] = await sequelize.query(
         `SELECT t.id, t.shop_name, t.shop_description, t.shop_address, c.city_name
         FROM tailorshops t, cities c
@@ -26,14 +24,12 @@ exports.getAllTailorshops = async (req, res) => {
           },
         }
       );
-      //om användaren inte skriver in en query och vill ha fram alla tailorshops men INTE får det
       if (!tailorshops || !tailorshops[0]) {
         throw new NotFoundError("We can't find any tailorshops");
       }
       return res.json({ data: tailorshops });
-      //om användaren skriver in en query på en stad men inte på review
+
     } else if (city !== undefined && !review) {
-      console.log("inside city");
       const [tailorshops, metadata] = await sequelize.query(
         `SELECT t.id, t.shop_name, t.shop_description, t.shop_address, c.city_name
         FROM tailorshops t, cities c
@@ -49,7 +45,7 @@ exports.getAllTailorshops = async (req, res) => {
           },
         }
       );
-      //om användaren skriver in en query på en stad för att söka på tailorshops i den staden men staden inte finns
+
       if (tailorshops.length == 0) {
         throw new NotFoundError("There is no tailorshops listed in that city");
       }
@@ -61,12 +57,11 @@ exports.getAllTailorshops = async (req, res) => {
         },
       });
 
-      //om användaren skriver in en query på en review men inte på en stad
     } else if (review !== undefined && !city) {
       if (!/^\d+$/.test(review) || review > 5) {
-        throw new NotFoundError("Input is invalid");
+        throw new BadRequestError("Input is invalid");
       }
-      //om användaren skriver in en query på en review men inte på en stad
+ 
       const [tailorshops, metadata] = await sequelize.query(
         `SELECT t.id, t.shop_name, t.shop_description, t.shop_address, c.city_name 
         FROM tailorshops t, cities c
@@ -90,7 +85,7 @@ exports.getAllTailorshops = async (req, res) => {
         },
       });
     } else {
-      //om användaren skriver in query för stad och score
+     
       const [tailorshops, metadata] = await sequelize.query(
         `SELECT t.id, t.shop_name, t.shop_description, t.shop_address, c.city_name 
         FROM tailorshops t, cities c
@@ -244,6 +239,27 @@ exports.updateTailorshopById = async (req, res) => {
       throw new NotFoundError("That user does not exists.");
     }
 
+    const [tailorshopResult] = await sequelize.query(
+      `SELECT * FROM tailorshops t  
+    WHERE t.id = $id;`,
+      {
+        bind: { id: tailorshopId },
+      }
+    ) 
+
+    if(tailorshopResult.length ===0) {
+      throw new NotFoundError("That tailorshop does not exist!")
+    }
+
+    if (
+      !userResults[0].is_admin &&
+      userResults[0].id !== tailorshopResult[0].fk_user_id
+    ) {
+      throw new UnauthorizedError(
+        "You are not allowed to update this tailorshop"
+      );
+    } 
+
     const [cityResults] = await sequelize.query(
       `SELECT * FROM cities c  
     WHERE UPPER(c.city_name) = UPPER($city);`,
@@ -254,31 +270,13 @@ exports.updateTailorshopById = async (req, res) => {
 
     if (cityResults.length === 0) {
       throw new NotFoundError("That city does not exists.");
-    }
-
-    const [tailorshopResult] = await sequelize.query(
-      `SELECT * FROM tailorshops t  
-    WHERE t.id = $id;`,
-      {
-        bind: { id: tailorshopId },
-      }
-    );
-
-    console.log(userResults, tailorshopResult);
-    if (
-      !userResults[0].is_admin &&
-      userResults[0].id !== tailorshopResult[0].fk_user_id
-    ) {
-      throw new UnauthorizedError(
-        "You are not allowed to update this tailorshop"
-      );
-    }
+    } else {
 
     const [updatedTailorshop] = await sequelize.query(
       `UPDATE tailorshops
   SET shop_name = $tailorshopName, shop_description = $tailorshopDescription, shop_address = $tailorshopAddress, fk_user_id = $tailorshopUser, fk_city_id = $tailorshopCity
   WHERE id = $tailorshopId
-  RETURNING *`,
+  RETURNING id, shop_name, shop_description, shop_address, fk_city_id`,
       {
         bind: {
           tailorshopUser: userResults[0].id,
@@ -291,6 +289,7 @@ exports.updateTailorshopById = async (req, res) => {
       }
     );
     return res.json(updatedTailorshop[0]);
+  }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });
@@ -317,6 +316,15 @@ exports.deleteTailorshopById = async (req, res) => {
       }
     );
 
+    if (
+      !userResults[0].is_admin &&
+      userResults[0].id !== tailorshopResult[0].fk_user_id
+    ) {
+      throw new UnauthorizedError(
+        "You are not allowed to delete this tailorshop"
+      );
+    } else {
+
     await sequelize.query(
       `DELETE FROM reviews WHERE fk_tailorshop_id = $tailorshopId ;`,
       {
@@ -329,16 +337,9 @@ exports.deleteTailorshopById = async (req, res) => {
       bind: { tailorshopId: tailorshopId },
       type: QueryTypes.DELETE,
     });
-
-    if (
-      !userResults[0].is_admin &&
-      userResults[0].id !== tailorshopResult[0].fk_user_id
-    ) {
-      throw new UnauthorizedError(
-        "You are not allowed to delete this tailorshop"
-      );
-    }
-    return res.sendStatus(204);
+ 
+    return res.sendStatus(204); 
+  }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });

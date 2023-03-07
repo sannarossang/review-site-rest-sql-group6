@@ -9,12 +9,11 @@ const {
 } = require("../controllers/reviewController");
 const {
   isAuthenticated,
-  authorizeRoles,
 } = require("../middleware/authenticationMiddleware");
 
-router.get("/reviews", isAuthenticated, getAllReviews);
-router.get("/reviews/:reviewId", isAuthenticated, getReviewById);
-router.post("/:tailorshopId/reviews", isAuthenticated, createNewReview);
+router.get("/reviews", getAllReviews);
+router.get("/reviews/:reviewId", getReviewById);
+router.post("/:tailorshopId/reviews",  isAuthenticated,  createNewReview);
 router.put(
   "/:tailorshopId/reviews/:reviewId",
   isAuthenticated,

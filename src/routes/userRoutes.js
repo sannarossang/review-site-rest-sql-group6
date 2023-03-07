@@ -1,8 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const {
-  isAuthenticated,
-  authorizeRoles,
+  isAuthenticated
 } = require("../middleware/authenticationMiddleware");
 const {
   getAllUsers,

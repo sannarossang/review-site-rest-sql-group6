@@ -9,13 +9,12 @@ const {
   deleteTailorshopById,
 } = require("../controllers/tailorshopController");
 const {
-  isAuthenticated,
-  authorizeRoles,
+  isAuthenticated
 } = require("../middleware/authenticationMiddleware");
 
 router.get("/", getAllTailorshops);
 router.get("/:tailorshopId", getTailorshopById);
-router.get("/city/:city", getTailorshopByCity);
+router.get("/cities/:city", getTailorshopByCity);
 router.post("/", isAuthenticated, createNewTailorshop);
 router.put("/:tailorshopId", isAuthenticated, updateTailorshopById);
 router.delete("/:tailorshopId", isAuthenticated, deleteTailorshopById);

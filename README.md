@@ -41,3 +41,6 @@ Down below you can find all test-users, emails and password.
 
 ![db](https://osody.se/db.png)
 ![db-links](https://osody.se/db-links.png)
+
+## Routes
+Listed as jsonfile under src/assets
