@@ -34,5 +34,5 @@ Down below you can find all test-users, emails and password.
 | ------ | ------ | ------ |
 | firstuser | firstuser@gmail.com | firstuser123 |
 | seconduser | seconduser@gmail.com | seconduser123 |
-| adminuser | adminuser@gmail.com | adminuser123 |
-| firstowneruser | firstowneruser@gmail.com | firstowneruser123 |
+| thirduser | thirduser@gmail.com | thirduser123 |
+| adminuser | adminuser@gmail.com | admin123 |

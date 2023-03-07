@@ -11,8 +11,18 @@ const { sequelize } = require("./database/config");
 const app = express();
 
 app.use(express.json());
-app.use(helmet());
-app.use(cors())
+app.use(
+  helmet.contentSecurityPolicy({
+    useDefaults: true,
+    directives: {
+      "img-src": ["'self'", "https: data:"]
+    }
+  })
+);
+app.use(cors({
+  origin: ['http://localhost:3000/'],
+  methods: ['GET', 'PUT', 'POST']
+}));
 
 app.use((req, res, next) => {
   console.log(`Processing ${req.method} request to ${req.path}`);
