@@ -11,7 +11,14 @@ const { sequelize } = require("./database/config");
 const app = express();
 
 app.use(express.json());
-app.use(helmet());
+app.use(
+  helmet.contentSecurityPolicy({
+    useDefaults: true,
+    directives: {
+      "img-src": ["'self'", "https: data:"]
+    }
+  })
+);
 app.use(cors());
 
 app.use((req, res, next) => {
