@@ -19,7 +19,10 @@ app.use(
     }
   })
 );
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:3000/'],
+  methods: ['GET', 'PUT', 'POST']
+}));
 
 app.use((req, res, next) => {
   console.log(`Processing ${req.method} request to ${req.path}`);

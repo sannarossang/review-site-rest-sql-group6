@@ -7,8 +7,10 @@ exports.getAllReviews = async (req, res) => {
     const limit = Number(req.query.limit || 10);
     const offset = Number(req.query.offset || 0);
     const tailorshop = req.query.shop_name;
+    const reviewScore = req.query.review_score;
 
-    if (!tailorshop) {
+
+    if (!tailorshop && !reviewScore) {
       console.log(req.query);
       const [results] = await sequelize.query(
         `SELECT r.id, r.review_text, t.shop_name, r.review_score, r.fk_user_id, r.fk_tailorshop_id
@@ -31,7 +33,7 @@ exports.getAllReviews = async (req, res) => {
           offset: offset,
         },
       });
-    } else if(tailorshop){
+    } else if(tailorshop && !reviewScore){
       console.log(req.query);
       const [results] = await sequelize.query(
         `SELECT r.id, r.review_text, t.shop_name, r.review_score, r.fk_user_id, r.fk_tailorshop_id
@@ -55,8 +57,65 @@ exports.getAllReviews = async (req, res) => {
           offset: offset,
         },
       });
+    } else if(!tailorshop && reviewScore){
+      if (!/^\d+$/.test(reviewScore) || reviewScore > 5) {
+        throw new NotFoundError("Input is invalid");
+      }
+      
+      console.log(req.query);
+      const [results] = await sequelize.query(
+        `SELECT r.id, r.review_text, t.shop_name, r.review_score, r.fk_user_id, r.fk_tailorshop_id
+         FROM reviews r
+         JOIN tailorshops t ON r.fk_tailorshop_id = t.id
+         WHERE r.review_score = $review_score
+         ORDER BY r.id ASC
+         LIMIT $limit OFFSET $offset;`,
+        {
+          bind: {
+            review_score: reviewScore,
+            limit: limit,
+            offset: offset,
+          },
+        }
+      );
+      return res.json({
+        data: results,
+        metadata: {
+          limit: limit,
+          offset: offset,
+        },  
+      });
     }
-    
+    else if(tailorshop && reviewScore){
+      if (!/^\d+$/.test(reviewScore) || reviewScore > 5) {
+        throw new NotFoundError("Input is invalid");
+      }
+      console.log(req.query);
+      const [results] = await sequelize.query(
+        `SELECT r.id, r.review_text, t.shop_name, r.review_score, r.fk_user_id, r.fk_tailorshop_id
+         FROM reviews r
+         JOIN tailorshops t ON r.fk_tailorshop_id = t.id
+         WHERE r.review_score = $review_score
+         AND t.shop_name = $shop_name
+         ORDER BY r.id ASC
+         LIMIT $limit OFFSET $offset;`,
+        {
+          bind: {
+            shop_name: tailorshop,
+            review_score: reviewScore,
+            limit: limit,
+            offset: offset,
+          },
+        }
+      );
+      return res.json({
+        data: results,
+        metadata: {
+          limit: limit,
+          offset: offset,
+        },
+      });
+    }
   } catch (error) {
     console.error(error);
     return res.status(500).json({ message: error.message });
