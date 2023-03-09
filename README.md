@@ -24,11 +24,22 @@ This project is a database-based project that uses SQLite and Express. Our proje
     ```
 6. Wait for the packages to be installed, and once it is done, you can proceed to run the project.
 
-That's it! Now you have successfully cloned the repository and installed all the necessary packages for the project.
+7. Seed your DB by running this command:
+    ```bash
+    npm run seedDb
+    ```
+
+8. Start your server by running this command:
+    ```bash
+    npm run dev
+    ```
+    
+
+That's it! Now you have successfully cloned the repository, installed all the necessary packages for the project, seeded the DB and started the server :D
 
 ## Users 👤
 
-Down below you can find all test-users, emails and password.
+Down below you can find all test-users, emails and passwords.
 
 | USER | EMAIL | PASSWORD |
 | ------ | ------ | ------ |
