@@ -24,6 +24,16 @@ This project is a database-based project that uses SQLite and Express. Our proje
     ```
 6. Wait for the packages to be installed, and once it is done, you can proceed to run the project.
 
+7. Start your server by running this command:
+ ```bash
+    npm run dev
+    ``` 
+8. Seed your DB by running this command:
+ ```bash
+    npm run seedDb
+    ``` 
+    
+
 That's it! Now you have successfully cloned the repository and installed all the necessary packages for the project.
 
 ## Users 👤
