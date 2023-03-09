@@ -39,7 +39,7 @@ That's it! Now you have successfully cloned the repository, installed all the ne
 
 ## Users 👤
 
-Down below you can find all test-users, emails and password.
+Down below you can find all test-users, emails and passwords.
 
 | USER | EMAIL | PASSWORD |
 | ------ | ------ | ------ |
